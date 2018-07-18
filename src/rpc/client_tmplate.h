@@ -1,5 +1,5 @@
 /*
- *  author liuxiaobing@formaxmarket.com
+ *  author zhushixin@formaxmarket.com
  *  Copyright (c) 2013-2014 formax
  *  2014-03-03
  * */
