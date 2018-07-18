@@ -1,0 +1,375 @@
+syntax = "proto2";
+
+package cell_proxy.protocols;
+option java_package = "formax.net";
+option java_outer_classname = "ProxyServiceCommon";
+
+//****************这些结构现在不用了**********************//
+
+//****************这些结构现在不用了**********************//
+
+enum Errno {
+  SUCCEED = 0;
+  FAILED = 1;
+  SESSION_FAILED = 2;
+  REFRESH_TOKEN_FAILED = 7;    // 微信AccessToken刷新失败
+
+  // 验证mt4密码返回失败
+  MT4_SERVER_FAILED = 3;
+  /// 其他的错误码
+  /// { 登录相关
+  AUTHEN_SERVER_NOT_READY = 8;    // 登录服务器故障
+  INVALID_LOGIN_INFO = 12;        // 登录数据不完整
+  NOT_REGISTERED_EMAIL = 15;      // 邮箱没有登录
+  WRONG_PASSWD = 16;              // 密码错误
+  LOGIN_FAILED = 17;              // 登录异常
+  INVALID_EMAIL = 18;             // 不是一个邮箱账号
+  PHONE_NUM_REGISTERED = 19;      // 手机号已注册
+  PHONE_NUM_NOT_REGISTRATED = 20; // 手机号未注册
+  INVALID_SMS_VERIFICATION_CODE = 21; // 短信验证码非法
+  REGISTRATION_FAILED = 22;       // 注册失败
+  SMS_CANNOT_REACH_SERVER = 23;   // 连不上短信服务器
+  SMS_SEND_FAILED = 24;           // 短信服务器发送短信验证码失败
+  SMS_INVALID_PHONE_NUM = 25;     // 短信服务器识别不了手机号码
+  WRONG_VERIFY = 26;              //验证码错误
+  LOGIN_DENY = 27;                // 禁止登录
+  REGISTER_DENY = 28;             // 禁止注册
+  MT4_ID_NOT_EXIST = 10001;       // mt4 id在认证系统不存在(数据未同步所致)
+  /// 登录相关 }
+
+  // for scopy
+  SCOPY_ERRNO_BEGIN = 41000;
+  SCOPY_NOT_BEGIN_YET = 41001;    // 开放复制还未开始(手机时间与服务器时间一致的可能性不大)
+  SCOPY_DENY_COPY = 41002;        // 不允许复制(如复制总额已满)
+  SCOPY_DENY_MODIFY = 41003;      // 不允许修改
+  SCOPY_NO_ENOUGH_MONEY = 41004;
+  SCOPY_ERRNO_END = 41999;
+
+  // collect invest project
+  CIP_ERRNO_BEGIN = 42000;
+  CIP_ERRNO_BID_EXCESS_AMOUNT = 42001; // 用户投入资金过多
+  CIP_ERRNO_BID_ENDED = 42002; // 集合投标已结束
+  CIP_ERRNO_BID_PASSWD_ERROR = 42003; // 支付密码错误
+  CIP_ERRNO_END = 42999;
+
+  //资讯评论
+  UGC_GET_FIRST_LEVEL_ERROR      = 43000;  //获取一级列表失败
+  UGC_GET_SECOND_LEVEL_ERROR     = 43001; //获取二级列表失败
+  UGC_COMMENT_FIRST_LEVEL_ERROR  = 43002; //发表一级评论失败
+  UGC_COMMENT_SECOND_LEVEL_ERROR = 43003;//发表二级评论失败
+  UGC_GET_NOTIFICATION_ERROR     = 43004; //获取动态通知失败
+  UGC_SUBMMIT_QUESTION_ERROR     = 43005; //发表提问失败
+  UGC_GET_USERINFO_ERROR         = 43006; //获取用户牛人身份信息失败
+  UGC_GET_TIMELINE_ERROR         = 43007; //获取用户牛人身份信息失败
+
+  //小白复制金
+  ERR_FOLLOWER_INFO_ACCOUNT_RICH = 50001;              //大于牛人资产的10倍
+  ERR_FOLLOWER_INFO_ACCOUNT_RICH_ACCOUNT_LESS = 50002; //小于牛人的1/40
+  ERR_FOLLOWER_INFO_ACCOUNT_RICH_ACCOUNT_POOR = 50003; //小于5000
+  ERR_FOLLOWER_INFO_CONNECTION_FAIL = 50004;           //链接失败
+  ERR_FOLLOWER_INFO_WATCH_FAIL = 50005;                //跟单失败
+  ERR_FOLLOWER_INFO_USER_UNBIND = 50006;               //用户未绑定券商账户
+  ERR_FOLLOWER_INFO_USER_TRADE_RIGHT = 50007;          //交易权限不足
+  ERR_FOLLOWER_INFO_YOU_ARE_ALREADY_MASTER = 50008;    //股票牛人自身
+  ERR_FOLLOWER_INFO_YOU_ARE_NOT_MASTER = 50009;        //非股票牛人
+  ERR_FOLLOWER_INFO_NOT_TRADE_DAY = 50010;             //非交易日
+  ERR_FOLLOWER_INFO_USER_PASSWD_WRONG=50011;
+  ERR_FOLLOWER_INFO_FORCOIN_WATCH_NOT_ENOUCH_MONEY=50012;
+  ERR_FOLLOWER_INFO_END_COPY_WITH_FOLLOW_HOLD_STOCKS=50113;
+  STOCK_RISE_PERCENT_EXC = 50015;//个股涨跌幅极端情况下单错误码
+
+  INVALID_INPUT = 99998;
+  COMMUNICATION_EXCEPTION = 99999; // 后台服务器通讯异常
+}
+
+message ErrInfo {
+  required Errno err_no = 1;
+  required string err_str = 2;
+}
+
+message StatusInfo {
+  required int32 status_no = 1 [default = -1];  //值参考 ErrorNo.txt
+  required string message = 2 [default = "unknown"];
+}
+
+enum DeviceType {
+  DEFAULTDEVICE = 0;
+  ANDROID = 1;
+  IOS = 2;
+  IOS_INHOUSE = 3;
+  PC = 4; // 桌面环境
+  MOBILE = 5; // 移动浏览器环境
+  HTML5 = 6; // APP内嵌HTML5
+  OTHER = 100;
+}
+
+enum AppType {
+  JRQ   = 1;
+  STOCK = 2;
+  WEB = 3;
+  LIFE = 4;
+  BaoXian = 5;
+  SimplifyP2P = 6;
+  Credit = 7;
+  Security = 8;
+}
+
+//每个接口都要带，终端信息
+message TerminalInfo{
+  optional int32 market_palace =1; //APP市场
+  optional int32 version =2; //版本（三位版本）
+  optional DeviceType device_type =3; //设备类型
+  optional string device_key =4;//唯一标示（程序生成并保存）uuid
+  optional string lang = 5;//传入语言
+  optional int32 app_type = 6; //APP类型，1:金融圈 2:股票圈 4:Life 5:保险 6:理财精简版 7:福麦信用 8:证券独立App ref: `enum AppType`
+  optional int32 sys_version = 7; //系统版本（两位版本）
+  optional string idfa = 8; //iOS平台广告标示符
+  optional string refid = 9; //渠道标示的ID
+  optional string activity_refid = 10 ; //活动来源的id，用以区别app渠道
+  optional int32 beta_version = 11; //beta版本号
+  optional string network_type = 12; //当前网络类型:'Wi-Fi'/'4G'/'3G'/'2G'
+  optional int32 version_code = 13; //APP的内部版本号
+  optional string mobile_phone_type=14; //手机版本类型
+  optional bool debug=15;//是否为测试包
+  optional string patch_version = 16;//当前应用的patch版本号,如果没有应用补丁,则该字段为空
+}
+
+message UserDetailInfo {
+  required int64  uid = 1;            // formax 系统id
+  required int64 mt4_demo_id = 2;     // mt4 demo
+  required int64 mt4_live_id = 3;     // mt4 live
+  required string mail_addr = 4;      // 用户邮箱地址
+  required string nick_name = 5;      // 用户昵称
+  required string location = 6;       // 注册地
+  required string head_pic_url = 7;   // 自定义头像地址
+  required int32  concern_num = 8;    // 关注 APP 3.1 登录 NOT USED
+  required int32  fans_num = 9;       // 粉丝 APP 3.1 登录 NOT USED
+  required int32  copier_num = 10;    // 复制者 APP 3.1 登录 NOT USED
+  optional bool is_ssb = 11;          // 是否是保本牛人 APP 3.1 登录 NOT USED
+  //V2.4新增
+  optional bool sex = 12;             // 性别
+  optional string phone = 13;         // 电话
+  optional string introduction = 14;  // 简介
+  optional string futures_id = 15;    // 用户期货id
+}
+
+// 拿这个信息登陆
+message LoginInfoProto {
+  optional int64  mt4_id = 1;
+  optional string mail_addr = 2;
+  required string md5_pass = 3;
+  optional int64  session_expire = 4;
+  required bool   need_detail = 5 [default = true];
+  optional string phonenumber_countrycode = 6; // 手机国家区号
+  optional string phonenumber = 7;//手机号
+  optional int32 login_way = 8;//1 代表主动登录，2代表自动登录
+  optional ThirdPartyInfo thirdparty_info = 9;//三方绑定金融圈账户
+  optional RegisterVerifyResult verify_pic_info = 10; // 用户识别内容
+  optional int32  version = 100;
+  optional TerminalInfo  terminal_info = 101;//终端信息
+}
+
+message RegisterVerifyResult {
+  required string   reg_session_key = 2;        // 标识本次注册的随机串
+  required string   vericode = 5;               // 用户识别出来的验证码
+}
+//第三方登录时的信息
+message ThirdPartyInfo{
+  optional int32 current_type = 1;//三方类型 2：微信
+  optional WechatInfo wechat_info = 2;//微信信息
+}
+
+message WechatInfo{
+  optional string unionid = 1;
+  optional string nickname = 2;
+  optional string headimgurl = 3;
+  optional string code = 4;
+  optional string access_token = 5;
+  optional string openid = 6;
+  optional string refresh_token = 7;
+}
+
+// 登陆返回这个信息  后续通信需要带这个作为标识
+message LoginSession {
+  required LoginInfoProto  login_info = 1;
+  required string     session_str = 2;
+  required int64      uid = 3;
+  optional TerminalInfo  terminal_info = 101;//终端信息(废弃)
+}
+
+enum CIPUnit {
+  CIP_UNIT_SECOND = 0; // 秒
+  CIP_UNIT_MINUTE = 1; // 分
+  CIP_UNIT_HOUR = 2; // 时
+  CIP_UNIT_DAY = 3; // 天
+  CIP_UNIT_MONTH= 4; // 月
+  CIP_UNIT_YEAR = 5; // 年
+}
+
+//通知请求（理财、股票）
+message NoticeListRequest {
+  required LoginSession session = 1;
+  required int32 batch_num = 2;
+  required int64 start_index = 3; //起始偏移，第一次传0，后续使用前一次返回最后一条的通知id
+  optional string lang = 4; //客户端语言类型,"ZH"-中文,"EN"-英文,"HK"-繁体
+  optional TerminalInfo  terminal_info = 101; //终端信息
+}
+
+// 3.1.0 股票、外汇页面快速入口信息
+message PageQuickEntranceInfo {
+  optional string maintitle = 1;//主标题名称
+  optional string icon_picurl = 3;//icon图Url
+  optional string jump_hyperlink = 4;//跳转超链接
+}
+//	3.1.0 股票、外汇页面快速入口信息请求
+message PageQuickEntranceRequest {
+  optional LoginSession session = 1;//有session就传，如果没有session不传
+  optional TerminalInfo  terminal_info = 101;//终端信息
+  optional int32 entranceType = 2 [default = 0];	//快速入口类型，0为股票开始入口，1为外汇快速入口
+}
+//	3.1.0 股票、外汇页面快速入口信息请求返回信息
+message PageQuickEntranceResponse{
+  required StatusInfo status_info = 1;
+  repeated PageQuickEntranceInfo quickentrance_list = 2;//快速入口信息数组
+}
+
+//3.2.0 牛人标签信息
+message SVMasterLabel{
+  optional int32 type = 1;//牛人标签类型，按位操作第1位表示股票牛人，第2位表示外汇牛人
+  optional string name = 2;//牛人标签名称(富文本，eg："<font color='#f5ca1c'>机构</font>")
+  optional string icon_url = 3;//牛人标签icon地址
+}
+
+//4.2.3新增会员标签信息
+message SVMemerLableInfo{
+  optional int32 type = 1;//会员等级  --普通会员(0) 黄金会员(1) 铂金会员（2）黑金会员(3)
+  optional string name = 2;//会员名称
+  optional string scheme = 3;//会员跳转链接
+  optional string remind_info = 4;//我是xxx会员
+  optional bool mem_switch = 5;//设置开关状态
+  optional string refer_name = 6;//来自xxxx的独白
+  optional string icon_url = 7;//会员图标
+}
+
+enum VouchersKinds {
+  VK_INTEREST = 0; //10W元利息券
+  VK_ONECENT = 1; //一分钱加速券
+  VK_INVITE = 2; //邀请好友券
+  VK_XUNLEI_VIP = 4; //迅雷vip绑定券
+  VK_QQ_EMAIL = 5; //邮箱推广券
+  VK_ACTIVATION_CODE = 6; //激活码生成的奖券
+  VK_BAIDU_DRAW = 7; // 百度抽奖优惠券
+  VK_NEWER = 8; // 新人专享现金券
+  VK_OTHER = 100; //
+  VK_ADD_INTEREST = 1001; //理财加息券
+}
+
+message Vouchers {
+  required string vouchers_rec = 1;//抵扣卷简介
+  required int32 record_id = 2;//抵扣卷id
+  required VouchersKinds vouchers_kind = 3;//类型
+  required double vouchers_amount = 4;//金额   当类型为理财加息券VK_ADD的时候，本字段表示利息
+  required int64  expire_time = 5;//过期时间
+  required double min_amount = 6;//使用门槛
+  optional int32 product_type = 7;//使用产品类型，1:理财 2:股票 3:外汇
+  optional string use_description = 8;//使用条件介绍
+  optional int32 use_state = 9;//使用状态，1:未使用 2:已使用 3:已过期
+  optional string cip_type = 10;//本优惠券适用理财类型，用于跳转到理财列表时后台过滤
+  optional double speed_up_rate = 11; //如果是1分钱加速券用该字段，表示加速的百分比
+}
+
+message UserAddressInfo {
+  optional string name = 1;
+  optional string phone_number = 2;//手机号码
+  optional string province = 3;//省 3.9.2废弃
+  optional string city = 4;//市 3.9.2废弃
+  optional string county = 5;//县 3.9.2废弃
+  optional string detail_address = 6;//详细地址
+  optional string postalcode = 7;//邮政编码
+  optional string area_json = 8;//四级信息 按照json存储 add in 3.9.2
+}
+
+//3.9.2 接入京东地区
+message Area{
+  optional int32  parent_area_id = 1;//地区的上级id
+  optional int32  area_id = 2; //地区的id
+  optional string area_name = 3; //地区名称
+}
+
+//城市描述
+message CityMapping{
+  optional string code = 1;   //城市编码
+  optional string name_ch = 2;    //城市中文名
+  optional string name_en = 3;    //城市英文名
+  optional int32 source = 5;  //城市编码来源：1-百度 2-高德
+}
+
+//微信分享, qq分享, 微博分享 等 所需的信息
+message ShareInfo {
+  required string title = 1;
+  required string msg = 2;
+  required string icon_url = 3;
+  required string jump_url = 4;
+}
+
+message ShareHeaderInfo {
+    optional string share_btn_title = 1;
+    optional string icon_url = 2;
+    optional string msg = 3;
+    optional string jump_btn_title = 4;
+    optional string jump_url = 5;
+}
+
+enum MoneyType {
+  RMB = 0;
+  US = 1;
+}
+
+enum RecommendProductType {
+  RPT_SOCK = 0; // 股票组合
+  RPT_FOREX_CGM = 1; // 外汇保本牛人
+  RPT_FOREX_GM = 2; // 外汇普通牛人
+  RPT_CIP = 3; // 集合理财
+  RPT_SOCK_MASTER = 4; // 股票牛人
+}
+
+//项目进度
+enum RecommendedProductProgress {
+
+  RP_PROGRESS_WAITING = 0;//等待中
+  RP_PROGRESS_COLLECTING = 1;//募集中
+  RP_PROGRESS_ENDED = 2;//已抢完
+}
+
+message RecommendedProduct {
+  required int32 id = 1;
+  required string title = 2; // 例如：预期年化收益
+  required string title_content = 3; // 12%~16%
+  required int32 financial_period = 4; // （仅仅2.0.0理财期限(天)）
+  required double min_amount = 5; // 起投金额(RMB/US)
+  repeated RecommendProductType rpt_type = 6;
+  required string guarantee_type = 7; // 资金保障类型
+  optional MoneyType money_type = 8;
+  optional CIPUnit  cip_unit = 16;//2.0.0以上不包括2.0.0（理财期限单位）
+  optional RecommendedProductProgress rp_progress = 17;//项目进度
+  optional double completeness = 18;//如果项目进度是募集中，则返回百分比
+  optional double speed_up = 19;//加速 百分比
+  optional bool JustOneRecommend = 20; //如果为true，直接跳转相关页面,不经过组合中间页面
+
+  optional string name = 21; //名称，例如月息宝1号
+  optional string recommend_reason = 22; //推荐理由，例如小步跑，赢大盘，稳中求胜
+  optional int32 sum_profit_time = 23; //股票牛人累计收益时间
+}
+//富文本对象，用于表示字体大小和颜色需要后台控制的字段(eg: 理财列表收益字段)
+message AttributedString{
+
+    repeated AttributedStringComponent components = 1;//富文本组件
+    optional int32 normal_font_size = 2;//正常字体，若组件中未定义字体，则前端应该使用该字体
+    optional int32 normal_text_color = 3;//正常颜色，若组件未定义颜色，则前端应该使用该颜色(Color定义：0xAABBCCDD(AA:alpha，BB:Red，CC:Green，DD:Blue))
+}
+message AttributedStringComponent{
+
+    optional string text = 1;//文本内容
+    optional int32 font_size = 2;//字体，如果未指定，会使用AttributedString.normal_font_size
+    optional int32 text_color = 3;//颜色，如果未指定，会使用AttributedString.normal_text_color(Color定义：0xAABBCCDD(AA:alpha，BB:Red，CC:Green，DD:Blue))
+}

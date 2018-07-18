@@ -1,0 +1,530 @@
+syntax = "proto2";
+
+import "futures_cell_proxy/proto/cell_proxy_common.proto";
+
+package futures.pb.protocols;
+option java_package = "formax.net";
+option java_outer_classname = "SecurityFuturesService";
+
+// Futures Error definition
+enum FuturesError {
+  ErrCode_UNKNOWN = 0;
+  ErrCode_SUCCESS = 1;
+  ErrCode_FUTURES_NOT_FOUND = 3;
+  // FUTURES_CELL_PROXY_ERR[30001-30020]
+  ErrCode_FUTURES_INFO_BUSY = 30002;  // 系统繁忙
+  ErrCode_FUTURES_RETURN_ERR = 30003; // 结果返回错误
+  ErrCode_FUTURES_REQ_ERR = 30004;    // 请求错误
+  ErrCode_FUTURES_TRADE_ERR = 30005;  // 交易失败错误
+  ErrCode_FUTURES_SESSION_ERR = 30006; // SESSION 错误
+}
+
+//订单条件类型
+enum OrderCondType {
+  COND_NONE = 0;
+  COND_STOP = 1;
+  COND_SCHEDTIME = 3;
+  COND_OCOSTOP = 4;
+  COND_TRAILSTOP = 6;
+  COND_COMBO_OPEN = 8;
+  COND_COMBO_CLOSE = 9;
+  COND_STOP_PRC = 11;
+  COND_OCOSTOP_PRC = 14;
+  COND_TRAILSTOP_PRC = 16;
+}
+
+//订单类型
+enum OrderPriceType {
+  ORD_LIMIT = 0;        //限价单
+  ORD_AUCTION = 2;      //竞价单
+  ORD_MARKET = 6;       //市价单
+}
+
+//订单有效类型
+enum VLDType {
+  VLD_REST_OF_DAY = 0;   //当天有效 目前APP可以采用这个值，其它高级用法暂时用不到保留
+  VLD_FILL_AND_KILL = 1; //成交并取消FAK（立即成交剩余指令自动撤销指令）
+  VLD_FILL_OR_KILL = 2;  //成交或取消FOK（立即全部成交否则自动撤销指令）
+  VLD_UNTIL_EXPIRE = 3;  //直到有效期GTC（此单将一直有效，除非取消）
+  VLD_SPEC_TIME = 4;     //直到自定时间GTD（此单在某天某时某分前会一直有效，到那个时候就会取消）
+}
+
+//配置信息板块列表
+message FuturesAccountConfigInfoList{
+  repeated FuturesSubAccountConfigInfoList config_info_list = 1;    //配置列表
+  optional string title = 2;                          // title(etc)
+}
+
+//配置信息
+message FuturesSubAccountConfigInfoList{
+  optional string caption_des = 1;                  //文案描述
+  optional string field_value = 2;                  //字段值
+  optional string scheme = 3;                       //跳转url
+  optional string item_icon = 4;                    //icon图片链接
+}
+
+// 期货账户中心今日收益,净值,购买力,基本保证金,维持保证金请求
+message QueryMyFuturesAssetsRequest {
+  optional string futures_id = 1;                                  //账户id
+  optional cell_proxy.protocols.LoginSession login_session = 100;  //用户请求信息
+  required cell_proxy.protocols.TerminalInfo  terminal_info = 101; //终端附带信息
+}
+
+message QueryMyFuturesAssetsReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  optional string total_net_worth = 2;                             //总净值
+  optional string real_buy_pwr = 3;                                //购买力
+  optional string basic_deposit = 4;                               //基本保证金
+  optional string pre_deposit = 5;                                 //维持保证金
+  optional string profit_today = 7;                                //今日盈亏
+}
+
+// 账户中心配置项请求
+message QueryFuturesAcconutConfigRequest {
+  optional string futures_id = 1;                                  //账户id
+  optional int32 type = 2;                                         //0：账户中心配置  1：更多(全部)功能
+  required cell_proxy.protocols.LoginSession login_session = 100;  //登录态
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+message QueryFuturesAccountConfigReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FuturesAccountConfigInfoList config_info_plate_list = 2;       //配置信息板块列表
+}
+
+// 用户状态请求
+message QueryUserStatusRequest {
+  optional string futures_id = 1;                                  //账户id
+  required cell_proxy.protocols.LoginSession login_session = 100;  //登录态
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 用户状态响应
+message QueryUserStatusReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  optional string status_url = 2;                                  //状态对应的url
+}
+
+// 获取委托订单请求
+message QueryPendingOrdersRequest {
+  optional string futures_id = 1;                                  //账户id
+  required cell_proxy.protocols.LoginSession login_session = 2;    //登录态
+  optional int32 start_index = 3;                                  //页数 从0开始
+  optional int32 batch_num = 4;                                    //数量
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 获取委托订单响应
+message QueryPendingOrdersReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FututesOrderInfo orders = 2;                                   //所有订单
+  optional bool has_more = 3;                                      //还有更多
+}
+
+// 期货订单信息
+message FututesOrderInfo {
+  optional int32 order_id = 1;                                     //订单id
+  optional FuturesSymbolItem symbol_item = 2;                      //品种
+  optional int32 trade_cmd = 3;                                    //1：买 2：卖
+  optional int64 trade_time = 4;                                   //交易时间
+  optional string state = 5;                                       //订单状态
+  repeated LableValue atts = 6;                                    //属性集合
+
+}
+
+message LableValue {
+  optional string label = 1;                                       //属性标签
+  optional string value = 2;                                       //属性值
+}
+
+// 获取持仓中订单请求
+message QueryHoldingOrdersRequest {
+  optional string futures_id = 1;                                  //账户id
+  required cell_proxy.protocols.LoginSession login_session = 2;    //登录态
+  optional int32 start_index = 3;                                  //页数 从0开始
+  optional int32 batch_num = 4;                                    //数量
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 获取持仓中订单响应
+message QueryHoldingOrdersReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FututesOrderInfo orders = 2;                                   //所有订单
+  optional bool has_more = 3;                                      //还有更多
+}
+
+// 获取订单历史请求
+message QueryHistoryOrderRequest {
+  optional string futures_id = 1;                                  //账户id
+  required cell_proxy.protocols.LoginSession login_session = 2;    //登录态
+  optional int32 start_index = 3;                                  //页数 从0开始
+  optional int32 batch_num = 4;                                    //数量
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 获取订单历史响应
+message QueryHistoryOrderReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FututesOrderInfo orders = 2;                                   //所有订单
+  optional bool has_more = 3;                                      //还有更多
+}
+
+// 订单详情请求
+message QueryOrderDetailRequest {
+  optional string futures_id = 1;                                  //账户id
+  optional int32 order_id = 2;                                     //订单id
+  optional cell_proxy.protocols.LoginSession login_session = 3;    //登录态
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 订单详情响应
+message QueryOrderDetailReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;
+  optional FututesOrderInfo order_detail = 2;                             //订单详情信息
+}
+
+// 资金流水记录请求
+message QueryTransactionRecordRequest {
+  optional string futures_id = 1;                                  //账户id
+  required cell_proxy.protocols.LoginSession login_session = 2;    //登录态
+  optional int32 index = 3;                                        //页数 从0开始
+  optional int32 batch_num = 4;                                    //数量
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;  //终端信息
+}
+
+// 资金流水记录响应
+message QueryTransactionRecordReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;         //响应状态描述
+  repeated TransactionRecord records = 2;                           //资金流水记录
+  optional bool has_more = 3;                                                //还有更多
+}
+
+// 资金流水描述
+message TransactionRecord {
+  optional string description = 1;                                  //类型
+  optional string money = 2;                                        //金额
+  optional int64 create_time = 3;                                   //时间（ms）
+}
+
+// 期货报价请求
+message QuerySymbolQuotationsRequest {
+  optional string futures_id = 1;                                  //账户id
+  optional cell_proxy.protocols.LoginSession session = 2;
+  repeated string symbols = 3;                                     //未登录 拉取行情报价
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 期货报价响应
+message QuerySymbolQuotationsReturn {
+  required cell_proxy.protocols.StatusInfo status_info = 1;         //响应状态描述
+  repeated FuturesSymbolItemInfo itemList = 2;                      //报价信息
+  optional int32 req_duration = 3;                                  //下次请求时间，单位毫秒
+}
+
+message FuturesSymbolItem {
+  optional string symbol = 1;                                       //期货代码(代码)
+  optional string name = 2;                                         //期货名称(中文)
+}
+
+message FuturesSymbolItemInfo {
+  optional FuturesSymbolItem base_info = 1;                         //基本信息
+  optional double price = 2;                                        //最新价
+  optional double volume = 3;                                       //成交量
+  optional string chg = 4;                                          //涨跌幅
+}
+
+// 获取交易品种列表请求
+message QuerySymbolGroupListRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional cell_proxy.protocols.LoginSession session = 2;
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 外汇交易品种分组
+message FuturesSymbolGroup {
+  optional string name = 1;
+  repeated FuturesSymbolItem items = 2;                             //期货品种集合
+}
+
+// 获取交易品种列表响应
+message QuerySymbolGroupListReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FuturesSymbolGroup groups = 2;                           //期货分组
+}
+
+// 编辑自选请求
+message UpdateSymbolChoiceRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional cell_proxy.protocols.LoginSession session = 2;
+  repeated FuturesSymbolItem items = 3;
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 编辑自选响应
+message UpdateSymbolChoiceReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+}
+
+// 买卖五档请求
+message QueryFifthOrderRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional string symbol = 2;                                       //合约代码
+  optional cell_proxy.protocols.LoginSession login_session = 100;
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 买卖五档返回
+message QueryFifthOrderReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FutruesMarketDepthTuple market_depth = 2;//五档
+  optional double last_close_price = 3;//昨收价
+  optional int32 digit = 4;//要保留的小数位数
+}
+
+
+message FutruesMarketDepthTuple{
+    optional double                sell_price = 1;//卖价，根据品种不同，小数位不同
+    optional int32                sell_qty = 2;//卖方向的 委托总数
+    optional double                buy_price = 3;//买价
+    optional int32                buy_qty = 4;//买方向的 委托总数
+
+    optional int32  sell_num = 5;//委托笔数
+    optional int32  buy_num = 6;//笔数
+}
+
+// 交易请求
+message FuturesTradeRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional string symbol = 2;                                       //合约代码
+  optional string volume = 3;                                       //手数
+  optional int32 type = 4;                                          //1:买入  2:沽出
+  optional string price = 5;                                        //价格
+  optional string signature = 6;                                    //加密字符串校验是否合法 生成规则：AES(MD5(futures_id + symbol + volume + type + price))
+  optional cell_proxy.protocols.LoginSession session = 7;
+  required int32 OrderOptions = 8 ;                                      //T+1 1:Yes 0:No 目前暂时支持0
+  required OrderCondType CondType = 9;                                   //订单条件类型 目前暂时使用COND_NONE
+  required OrderPriceType OrderType = 10;                                //订单价格类型
+  required VLDType ValidType = 11;                                       //订单有效类型 目前暂时用 VLD_REST_OF_DAY:0
+  required int32 price_digits = 12;                                      //价格位数
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 交易响应
+message FuturesTradeReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+}
+
+// 分钟线请求
+message FuturesGraphRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional string symbol = 2;                                       //合约代码
+  optional int32 period = 3;                                        //周期
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 分钟线响应
+message FuturesGraphReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated FuturesGraphItem items = 2;                              //曲线图数据
+}
+
+message FuturesGraphItem {
+  optional int64 time = 1;                                          //时间（ms）
+  optional double price = 2;                                        //价格
+  optional double volume = 3;                                       //交易量
+  optional string volume_color = 4;                                 //交易量展示颜色
+}
+
+// 期货K线图请求
+message FuturesKLineRequest {
+  optional string futures_id = 1;                                   //账户id
+  optional string symbol = 2;                                       //合约代码
+  optional int32 period = 3;                                        //周期
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 期货K线图响应
+message FuturesKLineReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+  repeated KLineItem items = 2;                                     //K线图数据
+}
+
+message KLineItem {
+  optional int64 ctm = 1;                                           //K柱时间戳，单位：ms
+  optional double open = 2;                                         //开盘价
+  optional double close = 3;                                        //收盘价
+  optional double high = 4;                                         //最高价
+  optional double low = 5;                                          //最低价
+  optional double volume = 6;                                       //交易量
+  optional string volume_color = 7;                                 //交易量展示颜色
+}
+
+// 撤单请求
+message CancelPendingOrderRequest {
+    optional string futures_id = 1;                                 //账户id
+    optional string order_id = 2;                                   //订单ID
+    optional string symbol = 3;                                   //品种名
+
+    optional cell_proxy.protocols.LoginSession session = 100;
+    optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 撤单返回
+message FututesCancelPendingOrderReturn {
+    optional cell_proxy.protocols.StatusInfo status_info = 1;
+}
+
+// 期货搜索界面，分类推荐请求
+message SymbolTypeRecommendRequest {
+    optional string features_id = 1;                                //账户ID
+    optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 期货搜索界面，分类推荐返回
+message SymbolTypeRecommendReturn {
+    optional cell_proxy.protocols.StatusInfo status_info = 1;
+    repeated RecommendBlockItem blocks = 2;                        //好几个模块
+}
+
+message RecommendBlockItem {
+    optional string name = 1;
+    optional string jump_url = 2;                                   //查看更多跳转地址
+    repeated FuturesSymbolItemInfo symbols = 3;                     //期货集合
+}
+
+// 获取某一类别下的所有的期货产品请求
+message SymbolListByTypeRequest {
+    optional string features_id = 1;
+    optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 获取某一类别下的所有的期货产品返回
+message SymbolListByTypeReturn {
+    optional cell_proxy.protocols.StatusInfo status_info = 1;
+    repeated FuturesSymbolItemInfo symbols = 2;                     //期货集合
+}
+
+// 通过名称或者代码查询期货产品请求
+message QuerySymbolByNameRequest {
+    optional string features_id = 1;                                //账户ID
+    optional string key = 2;                                        //搜索关键字
+    optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 通过名称或者代码查询期货产品返回
+message QuerySymbolByNameReturn {
+    optional cell_proxy.protocols.StatusInfo status_info = 1;
+    repeated FuturesSymbolItem symbols = 2;                     //期货集合
+}
+
+// 交易确认信息请求
+message TradeConfirmInfoRequest {
+    optional string futures_id = 1;                                 //账户id
+    required cell_proxy.protocols.LoginSession session = 2;
+    optional int32 trade_type = 3;                                  //交易类型，1：买入 2：沽出
+    optional string symbol = 4;                                     //期货代码
+    optional double price = 5;                                      //价格
+    optional double volume = 6;                                     //手数
+    optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 交易确认信息响应
+message TradeConfirmInfoReturn {
+    optional cell_proxy.protocols.StatusInfo status_info = 1;
+    optional string security_deposit = 2;                           //单笔保证金
+    optional string commission = 3;                                 //佣金
+}
+
+// 获取品种详细信息
+message QuerySymbolTradeInfoRequest {
+  optional string futures_id = 1;                                   //期货id
+  optional string symbol = 2;                                       //期货代码
+  optional cell_proxy.protocols.LoginSession session = 3;           //session
+  optional cell_proxy.protocols.TerminalInfo terminal_info = 101;
+}
+
+// 获取品种详细信息响应
+message QuerySymbolTradeInfoReturn {
+  optional cell_proxy.protocols.StatusInfo status_info = 1;
+  optional FuturesSymbolTradeInfo symbol_info = 2;                   //品种信息
+}
+
+message FuturesSymbolTradeInfo {
+  optional FuturesSymbolItem base_info = 1;                          //基本信息
+  optional double price = 2;                                         //最新价
+  optional double volume = 3;                                        //成交量
+  optional string chg = 4;                                           //涨跌幅
+  // 手数相关
+  optional double lots_step = 5;                                     //交易手数步长
+  // 价格相关
+  optional double price_step = 6;                                    //价格步长
+  optional int32 price_digits = 7;                                   //价格位数
+
+  optional double margin_peer_lot = 8;                               //每手保证金
+  optional double trade_fee = 9;                                     //交易费
+}
+
+service FuturesCellProxyService {
+  // 期货用户状态查询
+  rpc QueryUserStatus(QueryUserStatusRequest) returns (QueryUserStatusReturn);
+
+  // 期货账户中心净值,购买力,基本保证金,维持保证金;
+  rpc QueryMyFuturesAssets(QueryMyFuturesAssetsRequest) returns (QueryMyFuturesAssetsReturn);
+
+  // 账户中心配置项;
+  rpc QueryFuturesAccountConfig(QueryFuturesAcconutConfigRequest) returns (QueryFuturesAccountConfigReturn);
+
+  // 获取委托订单
+  rpc QueryPendingOrders(QueryPendingOrdersRequest) returns (QueryPendingOrdersReturn);
+
+  // 获取持仓中订单
+  rpc QueryHoldingOrders(QueryHoldingOrdersRequest) returns (QueryHoldingOrdersReturn);
+
+  // 获取订单历史
+  rpc QueryHistoryOrders(QueryHistoryOrderRequest) returns (QueryHistoryOrderReturn);
+
+  // 订单详情
+  rpc QueryOrderDetail(QueryOrderDetailRequest) returns (QueryOrderDetailReturn);
+
+  // 资金流水
+  rpc QueryTransactionRecord(QueryTransactionRecordRequest) returns(QueryTransactionRecordReturn);
+
+  // 获取期货报价
+  rpc QuerySymbolQuotations(QuerySymbolQuotationsRequest) returns (QuerySymbolQuotationsReturn);
+
+  // 期货分组
+  rpc QuerySybolGroupList(QuerySymbolGroupListRequest) returns (QuerySymbolGroupListReturn);
+
+  // 编辑自选
+  rpc UpdateSymbolChoice(UpdateSymbolChoiceRequest) returns (UpdateSymbolChoiceReturn);
+
+  // 买卖五档
+  rpc QueryFifthOrder(QueryFifthOrderRequest) returns (QueryFifthOrderReturn);
+
+  // 交易
+  rpc FuturesTrade(FuturesTradeRequest) returns (FuturesTradeReturn);
+
+  // 撤单
+  rpc CancelPendingOrder(CancelPendingOrderRequest) returns (FututesCancelPendingOrderReturn);
+
+  // 分钟线
+  rpc FuturesGraph(FuturesGraphRequest) returns (FuturesGraphReturn);
+
+  // 分时，日K，月K，周K
+  rpc FuturesKLine(FuturesKLineRequest) returns (FuturesKLineReturn);
+
+  // 期货搜索界面，按类选择推荐 ---搜索界面
+  rpc SymbolTypeRecommend(SymbolTypeRecommendRequest) returns (SymbolTypeRecommendReturn);
+
+  // 按类别查询期货列表 ---搜索界面更多
+  rpc SymbolListByType(SymbolListByTypeRequest) returns (SymbolListByTypeReturn);
+
+  // 通过期货名称查询期货 ---搜索期货
+  rpc QuerySymbolByName(QuerySymbolByNameRequest) returns (QuerySymbolByNameReturn);
+
+  // 交易确认信息请求
+  rpc TradeConfirmInfo(TradeConfirmInfoRequest) returns (TradeConfirmInfoReturn);
+
+  // 获取期货品种报价等详细信息  ---交易界面
+  rpc QuerySymbolTradeInfo(QuerySymbolTradeInfoRequest) returns (QuerySymbolTradeInfoReturn);
+}

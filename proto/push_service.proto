@@ -1,0 +1,157 @@
+import "futures_cell_proxy/proto/cell_proxy_common.proto";
+
+package cell_proxy.protocols;
+option java_package = "formax.net";
+option java_outer_classname = "PushServiceProto";
+
+message DeviceKey {
+  // 定义推送秘钥结构
+  required string device_key = 1;
+}
+
+message PushKeyReq {
+  required DeviceType device_type = 1;
+  required DeviceKey  device_key = 2;
+  // 当没有用户id(0)时候 表示注册接收非登录状态消息
+  // 当id不为0时候，注册接收登录状态消息
+  // 需要客户端验证用户登录成功之后才能调用注册这个
+  required int64      uid = 3;
+  required string     lang = 4;       // 中文zh 其他都是英文
+  required bool       enable_push = 5;
+  required bool       enable_sys_notice = 6;
+  required bool       enable_live_notice = 7;
+  required bool       enable_demo_notice = 8;
+  optional LoginSession session = 9; // 作会话保持用
+
+  //股票
+  optional bool       enable_stock_notice = 11; //股票通知
+
+  //理财
+  // 因移动端未设置该参数，为不影响业务正常动作，必须设置默认值为true
+  // 用户在关闭理财通知时，客户端必须明确的将该值设置为false
+  optional bool       enable_finacing_notice = 12 [default = true]; //理财通知
+  optional bool       enable_stock_news_notice = 13[default = true];
+
+  // 只在必要的情况下，打开小米推送这个开关
+  optional bool       enable_mi_push = 14 [default = false];
+
+  // 资讯推送开关
+  optional bool		  enable_app_news_notice = 15 [default = false];
+  // 会员消息推送开关
+  optional bool		  enable_vip_notice = 16 [default = false];
+
+  optional TerminalInfo  terminal_info = 101; //终端信息
+}
+
+// Anroid Push消息结构, 作为Push通用消息结构
+message PushMsg {
+  enum MsgType {
+    INVALID = 0; // for RequestPush response when both device_key and uid are invalid
+    REQUESTPUSH = 1; // for RequestPush successful response
+    HEARTBEAT = 2; // for RequestPush response
+    BRIEF = 3; // for push msg
+    ACK = 4; // for ack
+  }
+  required MsgType msg_type = 1;
+  optional NewInfoBrief brief_msg = 2;
+  optional Errno err_no = 3; // 会话保持用
+  optional string user_cmd = 4; //自定义用户命令
+}
+message AckMsg{
+    enum AckType{
+        RECEIVED = 0; //已接收到push消息
+        CLICKED = 1; //已点击push消息
+    }
+    required string msg_id = 1;  //消息id
+    required AckType ack_type = 2; //push消息操作类型
+    optional int64 uid = 3; //用户uid
+}
+message AckMsgReq{
+    repeated AckMsg ack_msg = 1;   //待确认的消息列表
+    optional TerminalInfo  terminal_info = 101;//终端信息
+
+}
+message NewInfoBrief {
+  enum MsgType {
+    NOTICE_INFO   = 1;
+    FOLLOW_INFO   = 2;
+    COPY_INFO     = 3;
+    BONUS_INFO    = 4;
+    P2P_INFO      = 5;
+    FORBAG_INFO   = 6;
+    EXCHANGE_INFO = 7;
+  }
+  required MsgType msg_type = 1;
+  required string title = 2;
+  required string brief = 3;
+  required bool content_exist = 4;
+  required string content = 5;
+  optional string msg_id = 6 [default = "0"];
+  
+  //需要交互的时候 客户端自己解析成不同的结构
+  optional string extra_data = 7 [default = " "];
+}
+
+message MsgFilterCond {
+  required int64 filter_id1 = 1;  // lizhi 复制失败消息id
+  required int64 filter_id2 = 2;  // changzhao 复制消息id
+  required int64 filter_id3 = 3;  // 赠金消息id
+}
+
+message NewInfoBriefReturn {
+  required ErrInfo  err_info = 1;
+  required MsgFilterCond filter = 2;  // 最新一条消息的时间戳
+  repeated NewInfoBrief all_brief_info = 3;
+}
+
+// 根据客户端过滤不同的消息类型
+message MsgFilterType {
+  required bool       enable_sys_notice = 1;
+  required bool       enable_live_notice = 2;
+  required bool       enable_demo_notice = 3;
+  optional bool				enable_live_stock_notice = 4;//股票真实
+  optional bool				enable_demo_stock_notice = 5;//股票模拟
+}
+
+// push Andriod 后台拉取消息的简短描述信息
+message NewBriefInfoReq {
+  required bool   client_mode = 1;  // true 登录状态 false 非登录状态
+  required int64  uid = 2;
+  required int64  mt4_live_id = 3;
+  required int64  mt4_demo_id = 4;
+  required MsgFilterCond filter = 5;
+  required LoginSession session = 6;
+  optional string lang = 7; // 客户端语言类型, "zh", 中文; 其它, 英文
+  required MsgFilterType msg_type_filter = 8;
+  optional string device_key = 9[default = ""];
+  optional TerminalInfo  terminal_info = 101;//终端信息
+}
+
+message LoginReturn {
+  required ErrInfo      err_info = 1;
+  optional LoginSession login_session = 2;
+  optional UserDetailInfo user_detail = 3;
+}
+service PushService {
+  rpc Login(LoginInfoProto) returns (LoginReturn);
+  rpc Logout(LoginSession) returns (ErrInfo);
+
+  // 推送注册 接收推送消息(for ios)
+  rpc RegisterForPushMsg(PushKeyReq) returns (ErrInfo);
+
+  // Android推送
+  // 推送注册
+  rpc RequestPush(PushKeyReq) returns (PushMsg);
+  // 链路存活心跳保持
+  rpc HeartBeat(PushKeyReq) returns (PushMsg);
+
+  // Andriod 拉取推送的基本信息
+  rpc GetNewInfoBrief(NewBriefInfoReq) returns (NewInfoBriefReturn);
+  // Android消息确认，如消息接收，消息点击
+  rpc AckPush(AckMsgReq) returns (PushMsg);
+
+  //ios 上报push通知点击
+  rpc IOSAckPush(AckMsgReq) returns (ErrInfo);
+
+}
+

@@ -1,0 +1,69 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.6	//
+CancelPendingOrder	futures_proxy.cc	/^void FuturesProxy::CancelPendingOrder(const CancelPendingOrderRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+CancelPendingOrder	request_handler.cc	/^CancelPendingOrderReturn RequestHandler::CancelPendingOrder($/;"	f	class:futures::pb::server::RequestHandler
+FUTURES_CELL_PROXY_SRC_CONFIG_H	config.h	6;"	d
+FUTURES_CELL_PROXY_SRC_FUTURES_CONVERT_H	futures_convert.h	5;"	d
+FUTURES_CELL_PROXY_SRC_FUTURES_PROXY_H	futures_proxy.h	6;"	d
+FUTURES_CELL_PROXY_SRC_REQUEST_HANDLER_H	request_handler.h	6;"	d
+FuturesConvert	futures_convert.h	/^class FuturesConvert {$/;"	c	namespace:futures::pb::server
+FuturesProxy	futures_proxy.cc	/^FuturesProxy::FuturesProxy() {$/;"	f	class:futures::pb::server::FuturesProxy
+FuturesProxy	futures_proxy.h	/^class FuturesProxy : public Singleton<FuturesProxy> {$/;"	c	namespace:futures::pb::server
+FuturesTrade	futures_proxy.cc	/^void FuturesProxy::FuturesTrade(const FuturesTradeRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+FuturesTrade	request_handler.cc	/^FuturesTradeReturn RequestHandler::FuturesTrade($/;"	f	class:futures::pb::server::RequestHandler
+HandleRequest	request_handler.h	/^  virtual void HandleRequest(ConnectionPtr conn, const request& req,$/;"	f	class:futures::pb::server::RequestHandler
+Init	request_handler.cc	/^void RequestHandler::Init() {$/;"	f	class:futures::pb::server::RequestHandler
+QueryFuturesAccountConfig	futures_proxy.cc	/^void FuturesProxy::QueryFuturesAccountConfig(const QueryFuturesAcconutConfigRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryFuturesAccountConfig	request_handler.cc	/^QueryFuturesAccountConfigReturn RequestHandler::QueryFuturesAccountConfig($/;"	f	class:futures::pb::server::RequestHandler
+QueryHoldingOrders	futures_proxy.cc	/^void FuturesProxy::QueryHoldingOrders(const QueryHoldingOrdersRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryHoldingOrders	request_handler.cc	/^QueryHoldingOrdersReturn RequestHandler::QueryHoldingOrders($/;"	f	class:futures::pb::server::RequestHandler
+QueryMyFuturesAssets	futures_proxy.cc	/^void FuturesProxy::QueryMyFuturesAssets(const QueryMyFuturesAssetsRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryMyFuturesAssets	request_handler.cc	/^QueryMyFuturesAssetsReturn RequestHandler::QueryMyFuturesAssets($/;"	f	class:futures::pb::server::RequestHandler
+QueryOrderDetail	futures_proxy.cc	/^void FuturesProxy::QueryOrderDetail(const QueryOrderDetailRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryOrderDetail	request_handler.cc	/^QueryOrderDetailReturn RequestHandler::QueryOrderDetail($/;"	f	class:futures::pb::server::RequestHandler
+QueryPendingOrders	futures_proxy.cc	/^void FuturesProxy::QueryPendingOrders(const QueryPendingOrdersRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryPendingOrders	request_handler.cc	/^QueryPendingOrdersReturn RequestHandler::QueryPendingOrders($/;"	f	class:futures::pb::server::RequestHandler
+QueryTransactionRecord	futures_proxy.cc	/^void FuturesProxy::QueryTransactionRecord(const QueryTransactionRecordRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryTransactionRecord	request_handler.cc	/^QueryTransactionRecordReturn RequestHandler::QueryTransactionRecord($/;"	f	class:futures::pb::server::RequestHandler
+QueryUserStatus	futures_proxy.cc	/^void FuturesProxy::QueryUserStatus(const QueryUserStatusRequest& req,$/;"	f	class:futures::pb::server::FuturesProxy
+QueryUserStatus	request_handler.cc	/^QueryUserStatusReturn RequestHandler::QueryUserStatus($/;"	f	class:futures::pb::server::RequestHandler
+RequestHandler	request_handler.cc	/^RequestHandler::RequestHandler(const std::string& doc_root) : Handler(doc_root) {$/;"	f	class:futures::pb::server::RequestHandler
+RequestHandler	request_handler.h	/^class RequestHandler : public http::server_base::Handler {$/;"	c	namespace:futures::pb::server
+ToProtoActiveOrders	futures_convert.cc	/^void FuturesConvert::ToProtoActiveOrders(const futures_trade::protocols::GetActiveOrderResp& order_detail_resp,$/;"	f	class:futures::pb::server::FuturesConvert
+ToProtoMyFuturesAsset	futures_convert.cc	/^void FuturesConvert::ToProtoMyFuturesAsset(const futures_trade::protocols::GetAccInfoResp& acc_info_resp,$/;"	f	class:futures::pb::server::FuturesConvert
+ToProtoOrderDetail	futures_convert.cc	/^void FuturesConvert::ToProtoOrderDetail(const futures_trade::protocols::GetOrderByNoResp& order_detail_resp,$/;"	f	class:futures::pb::server::FuturesConvert
+ToProtoPosition	futures_convert.cc	/^void FuturesConvert::ToProtoPosition(const futures_trade::protocols::GetPositionResp& position_resp,$/;"	f	class:futures::pb::server::FuturesConvert
+baseecho	request_handler.h	/^  inline void baseecho(const std::string& in_data, std::string* out) {$/;"	f	class:futures::pb::server::RequestHandler
+conn_timeout_ms	config.h	/^DECLARE_int32(conn_timeout_ms);$/;"	v
+futures	futures_convert.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	file:
+futures	futures_convert.h	/^namespace futures { namespace pb { namespace server {$/;"	n
+futures	futures_proxy.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	file:
+futures	futures_proxy.h	/^namespace futures { namespace pb { namespace server {$/;"	n
+futures	request_handler.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	file:
+futures	request_handler.h	/^namespace futures { namespace pb { namespace server {$/;"	n
+listen_ip	config.h	/^DECLARE_string(listen_ip);$/;"	v
+listen_port	config.h	/^DECLARE_string(listen_port);$/;"	v
+m_retry_times	config.h	/^DECLARE_int32(m_retry_times);$/;"	v
+main	main.cc	/^int main(int argc, char* argv[]) {$/;"	f
+pb	futures_convert.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures	file:
+pb	futures_convert.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures
+pb	futures_proxy.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures	file:
+pb	futures_proxy.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures
+pb	request_handler.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures	file:
+pb	request_handler.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures
+recv_timeout_ms	config.h	/^DECLARE_int32(recv_timeout_ms);$/;"	v
+rpc_call_times	config.h	/^DECLARE_int32(rpc_call_times);$/;"	v
+send_timeout_ms	config.h	/^DECLARE_int32(send_timeout_ms);$/;"	v
+server	futures_convert.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb	file:
+server	futures_convert.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb
+server	futures_proxy.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb	file:
+server	futures_proxy.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb
+server	request_handler.cc	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb	file:
+server	request_handler.h	/^namespace futures { namespace pb { namespace server {$/;"	n	namespace:futures::pb
+sp_trade_info_server_ip	config.h	/^DECLARE_string(sp_trade_info_server_ip);$/;"	v
+sp_trade_info_server_port	config.h	/^DECLARE_int32(sp_trade_info_server_port);$/;"	v
+~FuturesProxy	futures_proxy.cc	/^FuturesProxy::~FuturesProxy() {$/;"	f	class:futures::pb::server::FuturesProxy
