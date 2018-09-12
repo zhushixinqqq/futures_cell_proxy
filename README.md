@@ -5,7 +5,7 @@
  [![codecov](https://codecov.io/gh/gin-gonic/gin/branch/master/graph/badge.svg)](#html)
 
 <img align="right" width="159px" high="140" src="http://static.jrq.com/uploads/image/oa/2017/11/15/5a0bee8b3cd23phpGgOYpe.png">
-Futures Cell Proxy is http framework written in C++,but it is difference from the normal web(http) framework. You can feature a interface like API with better perference,thanks to the gin it provides these .svg file,you will love Futures cell proxy.
+Futures Cell Proxy is http framework written in C++,but it is difference from the normal web (http) framework. You can feature a interface like API with better perference,thanks to the gin it provides these .svg file,you will love Futures cell proxy.
 <br/><br/><br/><br/>
 # Repository Providing & Status
 
